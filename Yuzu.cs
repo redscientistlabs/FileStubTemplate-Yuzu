@@ -78,6 +78,7 @@ namespace FileStub.Templates
             List<FileInfo> allFiles = SelectMultipleForm.DirSearch(baseFolder);
 
             string baseless(string path) => path.Replace(GameExefsModFolder, "");
+            string baselessNRO(string path) => path.Replace(GameNROModFolder, "");
 
             //var allDlls = allFiles.Where(it => it.Extension == ".dll");
 
@@ -109,13 +110,13 @@ namespace FileStub.Templates
                 case YUZUSTUB_MAINANDNROS:
                     {
                         targets.AddRange(allMain.Select(it => Vault.RequestFileTarget(baseless(it.FullName), baseFolder.FullName)));
-                        targets.AddRange(allNROs.Select(it => Vault.RequestFileTarget(baseless(it.FullName), nroFolder.FullName)));
+                        targets.AddRange(allNROs.Select(it => Vault.RequestFileTarget(baselessNRO(it.FullName), nroFolder.FullName)));
                     }
                     break;
                 case YUZUSTUB_ALL:
                     {
                         targets.AddRange(allExecutables.Select(it => Vault.RequestFileTarget(baseless(it.FullName), baseFolder.FullName)));
-                        targets.AddRange(allNROs.Select(it => Vault.RequestFileTarget(baseless(it.FullName), nroFolder.FullName)));
+                        targets.AddRange(allNROs.Select(it => Vault.RequestFileTarget(baselessNRO(it.FullName), nroFolder.FullName)));
                     }
                     break;
             }
@@ -381,16 +382,8 @@ $@"== Corrupt Switch Games ==
         {
             if (!File.Exists(Path.Combine(YuzuParamsDir, "NRODISCLAIMERREAD"))){
                 MessageBox.Show(@"Note:
-                                Unlike with exefs switch executables, to load NROs into
-                                the Yuzu Filestub Template, you must have run a game
-                                (that has NROs) in the included version of Yuzu already.
-                                To dump an NRO, Yuzu must first load it in the emulated
-                                memory; this is because the NROs are in the game's romfs,
-                                and sometimes the NROs are in compressed archives.
-                                Thus, please ensure the game you want to corrupt NROs for
-                                has NROs, and then ensure that you have run it, generating
-                                pre-existing NRO dumps. Preparing an NRO mod requires you
-                                to have already run the game as said.");
+                                Unlike with exefs switch executables, to load NROs into the Yuzu Filestub Template, you must have run a game (that has NROs) in the included version of Yuzu already. To dump an NRO, Yuzu must first load it in the emulated memory; this is because the NROs are in the game's romfs, and sometimes the NROs are in compressed archives. Thus, please ensure the game you want to corrupt NROs for has NROs, and then ensure that you have run it, generating pre-existing NRO dumps. Preparing an NRO mod requires you to have already run the game as said.");
+                File.Create(Path.Combine(YuzuParamsDir, "NRODISCLAIMERREAD"));
             }
 
             GameNROModFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "load", GameID, "corruptions", "nro");
@@ -401,6 +394,10 @@ $@"== Corrupt Switch Games ==
             var di = new DirectoryInfo(GameNRODumpFolder);
             foreach (var file in di.GetFiles())
             {
+                if (File.Exists(Path.Combine(GameNROModFolder, file.Name)))
+                {
+                    continue;
+                }
                 file.CopyTo(Path.Combine(GameNROModFolder, file.Name));
             }
         }
