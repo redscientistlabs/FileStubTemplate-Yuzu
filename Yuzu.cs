@@ -258,12 +258,12 @@ $@"== Corrupt Switch Games ==
             ProcessStartInfo processStartInfo = new ProcessStartInfo();
             processStartInfo.FileName = YuzuExePath;
             processStartInfo.WorkingDirectory = Path.GetDirectoryName(YuzuExePath);
-            processStartInfo.Arguments = "\"" + gamepath + "\"";
+            processStartInfo.Arguments = "\"" + lbNSOTarget.Text + "\"";
             Process process = new Process();
             process.StartInfo = processStartInfo;
             process.Start();
             var di = new DirectoryInfo(GameNSODumpFolder);
-            while (di.GetFiles().Length == 0)
+            while (di.GetFiles().Length < 3) //ensure at least 2 or 3 executables have been dumped
             {
 
             }
