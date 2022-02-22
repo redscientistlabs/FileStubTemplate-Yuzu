@@ -51,7 +51,7 @@ namespace FileStub.Templates
 
             if (!Directory.Exists(YuzuParamsDir))
                 Directory.CreateDirectory(YuzuParamsDir);
-            lbNSOTarget.Visible = true;
+            lbNSOTarget.Visible = false;
             currentYuzuSession = new YuzuTemplateSession();
         }
         public FileTarget[] GetTargets()
