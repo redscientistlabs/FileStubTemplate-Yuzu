@@ -190,7 +190,7 @@ $@"== Corrupt Switch Games ==
             Regex rx = new Regex(@"([ABCDEF0123456789]{16})", RegexOptions.Compiled);
             Match match = rx.Match(game_name);
             GameID = match.Groups[1].Value;
-            GameNSODumpFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "dump", GameID, "nso");
+            GameNSODumpFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "dump", GameID, "nso_dump");
         }
 
         bool IFileStubTemplate.DragDrop(string[] fd)
@@ -258,16 +258,12 @@ $@"== Corrupt Switch Games ==
             ProcessStartInfo processStartInfo = new ProcessStartInfo();
             processStartInfo.FileName = YuzuExePath;
             processStartInfo.WorkingDirectory = Path.GetDirectoryName(YuzuExePath);
-            processStartInfo.Arguments = "\"" + lbNSOTarget.Text + "\"";
+            processStartInfo.Arguments = $"-d -g \"{lbNSOTarget.Text}\"";
             Process process = new Process();
             process.StartInfo = processStartInfo;
             process.Start();
             var di = new DirectoryInfo(GameNSODumpFolder);
-            while (di.GetFiles().Length < 3) //ensure at least 2 or 3 executables have been dumped
-            {
-
-            }
-            process.Kill();
+            process.WaitForExit();
             foreach(var file in di.GetFiles())
             {
                 var newname = Regex.Replace(file.Name, @"(-[ABCDEF0123456789]{40})", "");
