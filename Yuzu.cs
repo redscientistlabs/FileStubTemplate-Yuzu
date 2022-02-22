@@ -6,7 +6,9 @@ namespace FileStub.Templates
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using System.Windows.Forms;
+    using System.Xml;
     using Newtonsoft.Json;
     using RTCV.Common;
     using RTCV.CorruptCore;
@@ -17,9 +19,11 @@ namespace FileStub.Templates
 
         const string YUZUSTUB_MAIN = "Yuzu : NS Executable - main";
         const string YUZUSTUB_ALL = "Yuzu : NS Executables - main, sdk, and subsdk";
-        public string YuzuDir = Path.Combine(FileStub.FileWatch.currentDir, "YUZU");
-        public string NSNSOTOOLPATH;
-        public string YuzuExePath;
+        public static string YuzuDir = Path.Combine(FileStub.FileWatch.currentDir, "YUZU");
+        public string YuzuExePath = Path.Combine(FileStub.FileWatch.currentDir, "EMUS", "YUZU", "yuzu.exe");
+        public string GameExefsModFolder;
+        public string GameNSODumpFolder;
+        public string GameID;
         YuzuTemplateSession currentYuzuSession;
         public Dictionary<string, YuzuTemplateSession> knownGamesDico = new Dictionary<string, YuzuTemplateSession>();
         string currentSelectedTemplate = null;
@@ -47,27 +51,13 @@ namespace FileStub.Templates
 
             if (!Directory.Exists(YuzuParamsDir))
                 Directory.CreateDirectory(YuzuParamsDir);
-            lbNSOTarget.Visible = false;
-            NSNSOTOOLPATH = Path.Combine(YuzuDir, "nsnsotool.exe");
+            lbNSOTarget.Visible = true;
             currentYuzuSession = new YuzuTemplateSession();
-            if (File.Exists(Path.Combine(YuzuParamsDir, "YUZULOCATION")))
-            {
-
-                YuzuExePath = File.ReadAllText(Path.Combine(YuzuParamsDir, "YUZULOCATION"));
-                currentYuzuSession.YuzuExePath = File.ReadAllText(Path.Combine(YuzuParamsDir, "YUZULOCATION"));
-                if(!File.Exists(YuzuExePath))
-                {
-                    MessageBox.Show("FileStub can't find Yuzu. Did you move or delete Yuzu? Please redefine the location of your Yuzu install by clicking \"Select Yuzu\".");
-                    YuzuExePath = null;
-                    currentYuzuSession.YuzuExePath = null;
-                }
-            }
         }
         public FileTarget[] GetTargets()
         {
-            string targetExe = lbNSOTarget.Text;
             lbGameName.Visible = false;
-            if (targetExe == "")
+            if (GameExefsModFolder == "")
             {
                 MessageBox.Show("No target loaded");
                 return null;
@@ -75,19 +65,15 @@ namespace FileStub.Templates
 
             List<FileTarget> targets = new List<FileTarget>();
 
-            var exeFileInfo = new FileInfo(targetExe);
-            var exeFolder = exeFileInfo.Directory.FullName;
-
-            var baseFolder = exeFileInfo.Directory;
-
+            DirectoryInfo baseFolder = new DirectoryInfo(GameExefsModFolder);
 
             List<FileInfo> allFiles = SelectMultipleForm.DirSearch(baseFolder);
 
-            string baseless(string path) => path.Replace(exeFolder, "");
-
-            var exeTarget = Vault.RequestFileTarget(baseless(exeFileInfo.FullName), baseFolder.FullName);
+            string baseless(string path) => path.Replace(GameExefsModFolder, "");
 
             //var allDlls = allFiles.Where(it => it.Extension == ".dll");
+
+            var mainExe = allFiles.Where(it => it.Name.ToUpper().Contains("MAIN")).ToArray();
 
             var allExecutables = allFiles.Where(it =>
                     it.Name.ToUpper().Contains("MAIN") && !it.Name.ToUpper().Contains("NPDM") && !it.Name.ToUpper().Contains("BAK") ||
@@ -103,7 +89,7 @@ namespace FileStub.Templates
             {
                 case YUZUSTUB_MAIN:
                     {
-                        targets.Add(exeTarget);
+                        targets.AddRange(mainExe.Select(it => Vault.RequestFileTarget(baseless(it.FullName), baseFolder.FullName)));
                     }
                     break;
                 case YUZUSTUB_ALL:
@@ -112,26 +98,26 @@ namespace FileStub.Templates
                     }
                     break;
             }
-            gamepath = targetExe;
-            currentYuzuSession.gameName = exeFileInfo.Directory.Name;
+            gamepath = lbNSOTarget.Text;
+            currentYuzuSession.gameName = lbNSOTarget.Text;
+            currentYuzuSession.YuzuExePath = this.YuzuExePath;
             lbGameName.Visible = false;
             knownGamesDico[currentYuzuSession.gameName] = currentYuzuSession;
             cbSelectedGame.Items.Add(currentYuzuSession.gameName);
-            cbSelectedGame.SelectedIndex = cbSelectedGame.Items.Count - 1;
-            currentYuzuSession.gameMainExePath = gamepath;
+            //cbSelectedGame.SelectedIndex = cbSelectedGame.Items.Count - 1;
+            currentYuzuSession.gameFilePath = currentYuzuSession.gameName;
             foreach (YuzuTemplateSession cgi in knownGamesDico.Values)
             {
-
                 cgi.YuzuExePath = currentYuzuSession.YuzuExePath;
-                cgi.gameMainExePath = currentYuzuSession.gameMainExePath;
+                cgi.gameFilePath = currentYuzuSession.gameFilePath;
             }
-            SaveKnownGames();
+            //SaveKnownGames();
 
             //Prepare filestub for execution
             var sf = S.GET<StubForm>();
             FileWatch.currentSession.selectedExecution = ExecutionType.EXECUTE_OTHER_PROGRAM;
             Executor.otherProgram = currentYuzuSession.YuzuExePath;
-            sf.tbArgs.Text = $"\"{currentYuzuSession.gameMainExePath}\"";
+            sf.tbArgs.Text = $"\"{currentYuzuSession.gameFilePath}\"";
             FileWatch.currentSession.bigEndian = false;
             return targets.ToArray();
         }
@@ -195,48 +181,41 @@ namespace FileStub.Templates
 
             lbTemplateDescription.Text =
 $@"== Corrupt Switch Games ==
-Click on Select Yuzu and select the location of your version of Yuzu you wish to use, then...
-Decompress all executables in your game's folder, then...
-Load or drag and drop the game's main executable.
-";
+   TODO: description
+   ";
+        }
+
+        public void GetGameTitleID(string game_name)
+        {
+            Regex rx = new Regex(@"([ABCDEF0123456789]{16})", RegexOptions.Compiled);
+            Match match = rx.Match(game_name);
+            GameID = match.Groups[1].Value;
+            GameNSODumpFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "dump", GameID, "nso");
         }
 
         bool IFileStubTemplate.DragDrop(string[] fd)
         {
-            if (currentYuzuSession.YuzuExePath == null)
+            if (fd.Length > 1 || fd[0].EndsWith("\\") || !(fd[0].ToUpper().Contains(".NSP") || fd[0].ToUpper().Contains(".XCI")))
             {
-                MessageBox.Show("You need to specify Yuzu's location first.");
-                lbNSOTarget.Text = "";
-                return false;
-
-            }
-            if (fd.Length > 1 || fd[0].EndsWith("\\") || !fd[0].ToUpper().Contains("MAIN"))
-            {
-                MessageBox.Show("Please only drop the game's main executable");
+                MessageBox.Show("Please only drop an NSP or XCI dump of your game.");
                 lbNSOTarget.Text = "";
                 return false;
             }
 
             lbNSOTarget.Text = fd[0];
+            GetGameTitleID(new FileInfo(fd[0]).Name);
             return true;
         }
 
         public void BrowseFiles()
         {
-            if (currentYuzuSession.YuzuExePath == null)
-            {
-                MessageBox.Show("You need to specify Yuzu's location first.");
-                lbNSOTarget.Text = "";
-                return;
-
-            }
             string filename;
 
             OpenFileDialog OpenFileDialog1;
             OpenFileDialog1 = new OpenFileDialog();
 
-            OpenFileDialog1.Title = "Open Main Executable";
-            OpenFileDialog1.Filter = "main executable|main";
+            OpenFileDialog1.Title = "Open Switch Game";
+            OpenFileDialog1.Filter = "Switch Game|*.xci;*.nsp";
             OpenFileDialog1.RestoreDirectory = true;
             if (OpenFileDialog1.ShowDialog() == DialogResult.OK)
             {
@@ -255,116 +234,7 @@ Load or drag and drop the game's main executable.
                 return;
             }
             lbNSOTarget.Text = filename;
-        }
-
-        public void GetSegments(FileInterface exeInterface)
-        {
-            NSOHelper nso = new NSOHelper(exeInterface);
-            FileInfo fileInfo = new FileInfo(exeInterface.Filename);
-            long[] coderange = new long[2];
-            coderange[0] = nso.codeoffset;
-            coderange[1] = nso.codeoffset + nso.codesize;
-            if (coderange[0] >= coderange[1])
-                return;
-            string codevmdnametext = fileInfo.Name + "|code";
-            List<long[]> coderanges = new List<long[]>();
-            coderanges.Add(coderange);
-            VmdPrototype code = new VmdPrototype()
-            {
-                GenDomain = exeInterface.ToString(),
-                BigEndian = exeInterface.BigEndian,
-                AddRanges = coderanges,
-                WordSize = exeInterface.WordSize,
-                VmdName = codevmdnametext,
-                PointerSpacer = 1
-            };
-            RTCV.NetCore.LocalNetCoreRouter.Route(RTCV.NetCore.Endpoints.UI, RTCV.NetCore.Commands.Remote.DomainVMDAdd, (object)code, true);
-            RTCV.NetCore.LocalNetCoreRouter.Route(RTCV.NetCore.Endpoints.UI, RTCV.NetCore.Commands.Remote.EventDomainsUpdated);
-            long[] rodatarange = new long[2];
-            rodatarange[0] = nso.rodataoffset;
-            rodatarange[1] = nso.rodataoffset + nso.rodatasize;
-            if (rodatarange[0] >= rodatarange[1])
-                return;
-            string rodatavmdnametext = fileInfo.Name + "|read-only data";
-            List<long[]> rodataranges = new List<long[]>();
-            rodataranges.Add(rodatarange);
-            VmdPrototype rodata = new VmdPrototype()
-            {
-                GenDomain = exeInterface.ToString(),
-                BigEndian = exeInterface.BigEndian,
-                AddRanges = rodataranges,
-                WordSize = exeInterface.WordSize,
-                VmdName = rodatavmdnametext,
-                PointerSpacer = 1
-            };
-            RTCV.NetCore.LocalNetCoreRouter.Route(RTCV.NetCore.Endpoints.UI, RTCV.NetCore.Commands.Remote.DomainVMDAdd, (object)rodata, true);
-            RTCV.NetCore.LocalNetCoreRouter.Route(RTCV.NetCore.Endpoints.UI, RTCV.NetCore.Commands.Remote.EventDomainsUpdated);
-            long[] rwdatarange = new long[2];
-            rwdatarange[0] = nso.rwdataoffset;
-            rwdatarange[1] = nso.rwdataoffset + nso.rwdatasize;
-            if (rwdatarange[0] >= rwdatarange[1])
-                return;
-            string rwdatavmdnametext = fileInfo.Name + "|data";
-            List<long[]> rwdataranges = new List<long[]>();
-            rwdataranges.Add(rwdatarange);
-            VmdPrototype rwdata = new VmdPrototype()
-            {
-                GenDomain = exeInterface.ToString(),
-                BigEndian = exeInterface.BigEndian,
-                AddRanges = rwdataranges,
-                WordSize = exeInterface.WordSize,
-                VmdName = rwdatavmdnametext,
-                PointerSpacer = 1
-            };
-            RTCV.NetCore.LocalNetCoreRouter.Route(RTCV.NetCore.Endpoints.UI, RTCV.NetCore.Commands.Remote.DomainVMDAdd, (object)rwdata, true);
-            RTCV.NetCore.LocalNetCoreRouter.Route(RTCV.NetCore.Endpoints.UI, RTCV.NetCore.Commands.Remote.EventDomainsUpdated);
-        }
-
-        private void btnEditExec_Click(object sender, EventArgs e)
-        {
-
-            string filename = "";
-
-            OpenFileDialog OpenFileDialog1;
-            OpenFileDialog1 = new OpenFileDialog();
-
-            OpenFileDialog1.Title = "Open Yuzu";
-            OpenFileDialog1.Filter = "Yuzu|yuzu.exe";
-            OpenFileDialog1.RestoreDirectory = true;
-            if (OpenFileDialog1.ShowDialog() == DialogResult.OK)
-            {
-                if (OpenFileDialog1.FileName.ToString().Contains('^'))
-                {
-                    MessageBox.Show("You can't use a file that contains the character ^ ");
-                    //lbNSOTarget.Text = "";
-                    return;
-                }
-
-                filename = OpenFileDialog1.FileName;
-            }
-            YuzuExePath = filename;
-            currentYuzuSession.YuzuExePath = filename;
-            if (File.Exists(Path.Combine(YuzuDir, "PARAMS", "YUZULOCATION")))
-                File.Delete(Path.Combine(YuzuDir, "PARAMS", "YUZULOCATION"));
-            File.WriteAllText(Path.Combine(YuzuDir, "PARAMS", "YUZULOCATION"), filename);
-        }
-
-        private void btnDecompress_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog OpenFileDialog1;
-            OpenFileDialog1 = new OpenFileDialog();
-
-            OpenFileDialog1.Title = "Open Switch Executable";
-            OpenFileDialog1.Filter = "main|main|sdk|sdk|subsdk0|subsdk0|subsdk1|subsdk1|subsdk2|subsdk2|subsdk3|subsdk3|subsdk4|subsdk4|subsdk5|subsdk5|subsdk6|subsdk6";
-            OpenFileDialog1.RestoreDirectory = true;
-            string args;
-            if (OpenFileDialog1.ShowDialog() == DialogResult.OK)
-            {
-                File.Copy(OpenFileDialog1.FileName, OpenFileDialog1.FileName + ".bak");
-                File.Delete(OpenFileDialog1.FileName);
-                args = "\"" + OpenFileDialog1.FileName + ".bak\" \"" + OpenFileDialog1.FileName + "\"";
-                Process.Start(NSNSOTOOLPATH, args);
-            }
+            GetGameTitleID(new FileInfo(filename).Name);
         }
 
         private void FileStubTemplateYuzu_Load(object sender, EventArgs e)
@@ -373,10 +243,44 @@ Load or drag and drop the game's main executable.
             //LoadKnownGames();
         }
 
-        private void btnGetSegments_Click(object sender, EventArgs e)
+        private void btnPrepareMod_click(object sender, EventArgs e)
         {
-            foreach (var fi in (FileWatch.currentSession.fileInterface as MultipleFileInterface).FileInterfaces)
-                GetSegments(fi);
+            if (GameID == "")
+            {
+                MessageBox.Show("Game not defined!");
+                return;
+            }
+            GameExefsModFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "load", GameID, "corruptions", "exefs");
+            if (!Directory.Exists(GameExefsModFolder))
+            {
+                Directory.CreateDirectory(GameExefsModFolder);
+            }
+            ProcessStartInfo processStartInfo = new ProcessStartInfo();
+            processStartInfo.FileName = YuzuExePath;
+            processStartInfo.WorkingDirectory = Path.GetDirectoryName(YuzuExePath);
+            processStartInfo.Arguments = "\"" + gamepath + "\"";
+            Process process = new Process();
+            process.StartInfo = processStartInfo;
+            process.Start();
+            var di = new DirectoryInfo(GameNSODumpFolder);
+            while (di.GetFiles().Length == 0)
+            {
+
+            }
+            process.Kill();
+            foreach(var file in di.GetFiles())
+            {
+                var newname = Regex.Replace(file.Name, @"(-[ABCDEF0123456789]{40})", "");
+                if (newname == file.Name)
+                {
+                    newname = Regex.Replace(file.Name, @"(-[ABCDEF0123456789]{32})", "");
+                }
+                if (File.Exists(Path.Combine(GameExefsModFolder, newname)))
+                {
+                    continue;
+                }
+                file.CopyTo(Path.Combine(GameExefsModFolder, newname));
+            }
         }
 
         internal bool SelectGame(string selected = null)
@@ -386,18 +290,18 @@ Load or drag and drop the game's main executable.
 
             
 
-            string mainFullPath = currentYuzuSession.gameMainExePath;
-            if (!File.Exists(mainFullPath))
-            {
-                string message = "File Stub couldn't find the \"main\" file for this game. Would you like to remove this entry?";
-                var result = MessageBox.Show(message, "Error finding game", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+            //string gameFullPath = currentYuzuSession.gameFilePath;
+            //if (!File.Exists(gameFullPath))
+            //{
+            //    string message = "File Stub couldn't find the file for this game. Would you like to remove this entry?";
+            //    var result = MessageBox.Show(message, "Error finding game", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
 
-                if (result == DialogResult.Yes)
-                    UnmodGame();
+            //    if (result == DialogResult.Yes)
+            //        UnmodGame();
 
-                cbSelectedGame.SelectedIndex = 0;
-                return false;
-            }
+            //    cbSelectedGame.SelectedIndex = 0;
+            //    return false;
+            //}
 
             //if (!LoadRpxFileInterface())
             //    return false;
@@ -431,19 +335,24 @@ Load or drag and drop the game's main executable.
         private void cbSelectedGame_SelectedIndexChanged(object sender, EventArgs e)
         {
 
-            //var selected = cbSelectedGame.SelectedItem.ToString();
+            var selected = cbSelectedGame.SelectedItem.ToString();
 
-            //if (selected == "None")
-            //    return;
+            if (selected == "None")
+                return;
 
-            //if (!SelectGame(selected))
-            //{
-            //    cbSelectedGame.SelectedIndex = 0;
-            //    return;
-            //}
+            if (!SelectGame(selected))
+            {
+                cbSelectedGame.SelectedIndex = 0;
+                return;
+            }
 
-            //S.GET<StubForm>().btnLoadTargets_Click(null, null);
+            S.GET<StubForm>().btnLoadTargets_Click(null, null);
 
+        }
+
+        public void GetSegments(FileInterface exeInterface)
+        {
+            
         }
     }
     public class YuzuTemplateSession
@@ -452,8 +361,10 @@ Load or drag and drop the game's main executable.
         public FileInfo YuzuExeFile = null;
         public string YuzuExePath = null;
         public DirectoryInfo gameSaveFolder = null;
-        public string mainExeFile = null;
-        public string gameMainExePath = null;
+        public string gameID;
+        public string gameFile = null;
+        public string gameFilePath = null;
+        public string gameExefsModPath = null;
         public string FirstID = null;
         public string SecondID = null;
         public string fileInterfaceTargetId = null;
