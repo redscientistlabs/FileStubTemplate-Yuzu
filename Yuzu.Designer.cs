@@ -36,6 +36,7 @@ namespace FileStub.Templates
             this.btnPrepareMod = new System.Windows.Forms.Button();
             this.lbNSOTarget = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.btnPrepareNROMod = new System.Windows.Forms.Button();
             this.pnTarget.SuspendLayout();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
@@ -60,6 +61,7 @@ namespace FileStub.Templates
             this.pnTarget.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(96)))), ((int)(((byte)(96)))), ((int)(((byte)(96)))));
             this.pnTarget.Controls.Add(this.cbSelectedGame);
             this.pnTarget.Controls.Add(this.lbGameName);
+            this.pnTarget.Controls.Add(this.btnPrepareNROMod);
             this.pnTarget.Controls.Add(this.btnPrepareMod);
             this.pnTarget.Controls.Add(this.lbNSOTarget);
             this.pnTarget.Location = new System.Drawing.Point(14, 126);
@@ -137,6 +139,24 @@ namespace FileStub.Templates
             this.panel1.TabIndex = 40;
             this.panel1.Tag = "color:normal";
             // 
+            // btnPrepareNROMod
+            // 
+            this.btnPrepareNROMod.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnPrepareNROMod.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.btnPrepareNROMod.FlatAppearance.BorderSize = 0;
+            this.btnPrepareNROMod.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnPrepareNROMod.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.btnPrepareNROMod.ForeColor = System.Drawing.Color.White;
+            this.btnPrepareNROMod.Location = new System.Drawing.Point(186, 49);
+            this.btnPrepareNROMod.Name = "btnPrepareNROMod";
+            this.btnPrepareNROMod.Size = new System.Drawing.Size(85, 40);
+            this.btnPrepareNROMod.TabIndex = 192;
+            this.btnPrepareNROMod.TabStop = false;
+            this.btnPrepareNROMod.Tag = "color:dark1";
+            this.btnPrepareNROMod.Text = "Prepare NRO Mod";
+            this.btnPrepareNROMod.UseVisualStyleBackColor = false;
+            this.btnPrepareNROMod.Click += new System.EventHandler(this.btnPrepareNROMod_Click);
+            // 
             // FileStubTemplateYuzu
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -165,5 +185,6 @@ namespace FileStub.Templates
         public System.Windows.Forms.ComboBox cbSelectedGame;
         public System.Windows.Forms.Label lbGameName;
         private System.Windows.Forms.Button btnPrepareMod;
+        private System.Windows.Forms.Button btnPrepareNROMod;
     }
 }

@@ -12,17 +12,23 @@ namespace FileStub.Templates
     using Newtonsoft.Json;
     using RTCV.Common;
     using RTCV.CorruptCore;
+    using RTCV.NetCore;
     using RTCV.UI;
 
     public partial class FileStubTemplateYuzu : Form, IFileStubTemplate
     {
 
         const string YUZUSTUB_MAIN = "Yuzu : NS Executable - main";
-        const string YUZUSTUB_ALL = "Yuzu : NS Executables - main, sdk, and subsdk";
+        const string YUZUSTUB_ALLNSOS = "Yuzu : NS Executables - main, sdk, and subsdk";
+        const string YUZUSTUB_MAINANDNROS = "Yuzu : NS Executables - main and Relocatables";
+        const string YUZUSTUB_ALL = "Yuzu : NS Executables - All Executables and Relocatables";
         public static string YuzuDir = Path.Combine(FileStub.FileWatch.currentDir, "YUZU");
         public string YuzuExePath = Path.Combine(FileStub.FileWatch.currentDir, "EMUS", "YUZU", "yuzu.exe");
         public string GameExefsModFolder;
+        public string GameNROModFolder;
         public string GameNSODumpFolder;
+        public string YuzuParamsDir = Path.Combine(YuzuDir, "PARAMS");
+        public string GameNRODumpFolder;
         public string GameID;
         YuzuTemplateSession currentYuzuSession;
         public Dictionary<string, YuzuTemplateSession> knownGamesDico = new Dictionary<string, YuzuTemplateSession>();
@@ -33,6 +39,8 @@ namespace FileStub.Templates
         {
             get => new string[] {
             YUZUSTUB_MAIN,
+            YUZUSTUB_ALLNSOS,
+            YUZUSTUB_MAINANDNROS,
             YUZUSTUB_ALL,
         };
         }
@@ -47,7 +55,6 @@ namespace FileStub.Templates
             if (!Directory.Exists(YuzuDir))
                 Directory.CreateDirectory(YuzuDir);
 
-            string YuzuParamsDir = Path.Combine(YuzuDir, "PARAMS");
 
             if (!Directory.Exists(YuzuParamsDir))
                 Directory.CreateDirectory(YuzuParamsDir);
@@ -66,14 +73,13 @@ namespace FileStub.Templates
             List<FileTarget> targets = new List<FileTarget>();
 
             DirectoryInfo baseFolder = new DirectoryInfo(GameExefsModFolder);
+            DirectoryInfo nroFolder = new DirectoryInfo(GameNROModFolder);
 
             List<FileInfo> allFiles = SelectMultipleForm.DirSearch(baseFolder);
 
             string baseless(string path) => path.Replace(GameExefsModFolder, "");
 
             //var allDlls = allFiles.Where(it => it.Extension == ".dll");
-
-            var mainExe = allFiles.Where(it => it.Name.ToUpper().Contains("MAIN")).ToArray();
 
             var allExecutables = allFiles.Where(it =>
                     it.Name.ToUpper().Contains("MAIN") && !it.Name.ToUpper().Contains("NPDM") && !it.Name.ToUpper().Contains("BAK") ||
@@ -84,17 +90,32 @@ namespace FileStub.Templates
                     it.Name.ToUpper().Contains("MAIN")
                     ).ToArray();
 
+            var allNROs = (SelectMultipleForm.DirSearch(nroFolder)).Where(it =>
+                           it.Name.ToUpper().Contains(".NRO")).ToArray();
+
 
             switch (currentSelectedTemplate)
             {
                 case YUZUSTUB_MAIN:
                     {
-                        targets.AddRange(mainExe.Select(it => Vault.RequestFileTarget(baseless(it.FullName), baseFolder.FullName)));
+                        targets.AddRange(allMain.Select(it => Vault.RequestFileTarget(baseless(it.FullName), baseFolder.FullName)));
+                    }
+                    break;
+                case YUZUSTUB_ALLNSOS:
+                    {
+                        targets.AddRange(allExecutables.Select(it => Vault.RequestFileTarget(baseless(it.FullName), baseFolder.FullName)));
+                    }
+                    break;
+                case YUZUSTUB_MAINANDNROS:
+                    {
+                        targets.AddRange(allMain.Select(it => Vault.RequestFileTarget(baseless(it.FullName), baseFolder.FullName)));
+                        targets.AddRange(allNROs.Select(it => Vault.RequestFileTarget(baseless(it.FullName), nroFolder.FullName)));
                     }
                     break;
                 case YUZUSTUB_ALL:
                     {
                         targets.AddRange(allExecutables.Select(it => Vault.RequestFileTarget(baseless(it.FullName), baseFolder.FullName)));
+                        targets.AddRange(allNROs.Select(it => Vault.RequestFileTarget(baseless(it.FullName), nroFolder.FullName)));
                     }
                     break;
             }
@@ -181,7 +202,11 @@ namespace FileStub.Templates
 
             lbTemplateDescription.Text =
 $@"== Corrupt Switch Games ==
-   TODO: description
+   Please load a game first.
+   To corrupt the exefs, you
+   must first click Prepare Exefs Mod.
+   To corrupt the nros, click
+   Prepare NRO Mod.
    ";
         }
 
@@ -191,6 +216,7 @@ $@"== Corrupt Switch Games ==
             Match match = rx.Match(game_name);
             GameID = match.Groups[1].Value;
             GameNSODumpFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "dump", GameID, "nso_dump");
+            GameNRODumpFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "dump", GameID, "nro");
         }
 
         bool IFileStubTemplate.DragDrop(string[] fd)
@@ -349,6 +375,34 @@ $@"== Corrupt Switch Games ==
         public void GetSegments(FileInterface exeInterface)
         {
             
+        }
+
+        private void btnPrepareNROMod_Click(object sender, EventArgs e)
+        {
+            if (!File.Exists(Path.Combine(YuzuParamsDir, "NRODISCLAIMERREAD"))){
+                MessageBox.Show(@"Note:
+                                Unlike with exefs switch executables, to load NROs into
+                                the Yuzu Filestub Template, you must have run a game
+                                (that has NROs) in the included version of Yuzu already.
+                                To dump an NRO, Yuzu must first load it in the emulated
+                                memory; this is because the NROs are in the game's romfs,
+                                and sometimes the NROs are in compressed archives.
+                                Thus, please ensure the game you want to corrupt NROs for
+                                has NROs, and then ensure that you have run it, generating
+                                pre-existing NRO dumps. Preparing an NRO mod requires you
+                                to have already run the game as said.");
+            }
+
+            GameNROModFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "load", GameID, "corruptions", "nro");
+            if (!Directory.Exists(GameNROModFolder))
+            {
+                Directory.CreateDirectory(GameNROModFolder);
+            }
+            var di = new DirectoryInfo(GameNRODumpFolder);
+            foreach (var file in di.GetFiles())
+            {
+                file.CopyTo(Path.Combine(GameNROModFolder, file.Name));
+            }
         }
     }
     public class YuzuTemplateSession
