@@ -23,6 +23,7 @@ namespace FileStub.Templates
         const string YUZUSTUB_MAINANDNROS = "Yuzu : NS Executables - main and Relocatables";
         const string YUZUSTUB_ALL = "Yuzu : NS Executables - All Executables and Relocatables";
         public static string YuzuDir = Path.Combine(FileStub.FileWatch.currentDir, "YUZU");
+        public string NSNSOTOOL_PATH = Path.Combine(YuzuDir, "nsnsotool.exe");
         public string YuzuExePath = Path.Combine(FileStub.FileWatch.currentDir, "EMUS", "YUZU", "yuzu.exe");
         public string GameExefsModFolder;
         public string GameNROModFolder;
@@ -73,6 +74,11 @@ namespace FileStub.Templates
             List<FileTarget> targets = new List<FileTarget>();
 
             DirectoryInfo baseFolder = new DirectoryInfo(GameExefsModFolder);
+            if (!Directory.Exists(GameNROModFolder))
+            {
+                Directory.CreateDirectory(GameNROModFolder);
+                File.Create(Path.Combine(GameNROModFolder, "dummy.txt"));
+            }
             DirectoryInfo nroFolder = new DirectoryInfo(GameNROModFolder);
 
             List<FileInfo> allFiles = SelectMultipleForm.DirSearch(baseFolder);
@@ -218,6 +224,8 @@ $@"== Corrupt Switch Games ==
             GameID = match.Groups[1].Value;
             GameNSODumpFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "dump", GameID, "nso_dump");
             GameNRODumpFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "dump", GameID, "nro");
+            GameExefsModFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "load", GameID, "corruptions", "exefs");
+            GameNROModFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "load", GameID, "corruptions", "nro");
         }
 
         bool IFileStubTemplate.DragDrop(string[] fd)
@@ -277,7 +285,6 @@ $@"== Corrupt Switch Games ==
                 MessageBox.Show("Game not defined!");
                 return;
             }
-            GameExefsModFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "load", GameID, "corruptions", "exefs");
             if (!Directory.Exists(GameExefsModFolder))
             {
                 Directory.CreateDirectory(GameExefsModFolder);
@@ -293,16 +300,13 @@ $@"== Corrupt Switch Games ==
             process.WaitForExit();
             foreach(var file in di.GetFiles())
             {
-                var newname = Regex.Replace(file.Name, @"(-[ABCDEF0123456789]{40})", "");
-                if (newname == file.Name)
-                {
-                    newname = Regex.Replace(file.Name, @"(-[ABCDEF0123456789]{32})", "");
-                }
-                if (File.Exists(Path.Combine(GameExefsModFolder, newname)))
+                if (File.Exists(Path.Combine(GameExefsModFolder, file.Name)))
                 {
                     continue;
                 }
-                file.CopyTo(Path.Combine(GameExefsModFolder, newname));
+                string args = $"\"{file.FullName}\" \"{Path.Combine(GameExefsModFolder, file.Name)}\"";
+                Process.Start(NSNSOTOOL_PATH, args);
+                //file.CopyTo(Path.Combine(GameExefsModFolder, newname));
             }
         }
 
@@ -386,12 +390,13 @@ $@"== Corrupt Switch Games ==
                 File.Create(Path.Combine(YuzuParamsDir, "NRODISCLAIMERREAD"));
             }
 
-            GameNROModFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "load", GameID, "corruptions", "nro");
             if (!Directory.Exists(GameNROModFolder))
             {
                 Directory.CreateDirectory(GameNROModFolder);
             }
             var di = new DirectoryInfo(GameNRODumpFolder);
+            if (!Directory.Exists(GameNRODumpFolder))
+                return;
             foreach (var file in di.GetFiles())
             {
                 if (File.Exists(Path.Combine(GameNROModFolder, file.Name)))
