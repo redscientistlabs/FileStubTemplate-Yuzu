@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{BA664F2E-8750-4A3F-866E-EB1F4A5EEAC0}</ProjectGuid>
+    <ProjectGuid>{731F3537-6186-446C-B1FE-8B36BE42D0C2}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>YuzuTemplatePlugin</RootNamespace>
