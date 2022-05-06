@@ -34,7 +34,7 @@ namespace FileStub.Templates
         YuzuTemplateSession currentYuzuSession;
         public Dictionary<string, YuzuTemplateSession> knownGamesDico = new Dictionary<string, YuzuTemplateSession>();
         string currentSelectedTemplate = null;
-        Process YuzuProcess = null;
+        //Process YuzuProcess = null;
         string gamepath = null;
         public string[] TemplateNames
         {
@@ -422,7 +422,7 @@ $@"== Corrupt Switch Games ==
         public string fileInterfaceTargetId = null;
         public string gameName = "Autodetect";
         public string mainUncompressedToken = null;
-        internal FileMemoryInterface fileInterface;
+        //internal FileMemoryInterface fileInterface;
 
         public override string ToString()
         {
