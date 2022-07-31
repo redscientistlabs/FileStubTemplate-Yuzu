@@ -222,7 +222,7 @@ $@"== Corrupt Switch Games ==
             Regex rx = new Regex(@"([ABCDEF0123456789]{16})", RegexOptions.Compiled);
             Match match = rx.Match(game_name);
             GameID = match.Groups[1].Value;
-            GameNSODumpFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "dump", GameID, "nso_dump");
+            GameNSODumpFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "dump", GameID, "nso");
             GameNRODumpFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "dump", GameID, "nro");
             GameExefsModFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "load", GameID, "corruptions", "exefs");
             GameNROModFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "yuzu", "load", GameID, "corruptions", "nro");
@@ -300,13 +300,16 @@ $@"== Corrupt Switch Games ==
             process.WaitForExit();
             foreach(var file in di.GetFiles())
             {
-                if (File.Exists(Path.Combine(GameExefsModFolder, file.Name)))
+                var newname = Regex.Replace(file.Name, @"(-[ABCDEF0123456789]{40})", "");
+                if (newname == file.Name)
+                {
+                    newname = Regex.Replace(file.Name, @"(-[ABCDEF0123456789]{32})", "");
+                }
+                if (File.Exists(Path.Combine(GameExefsModFolder, newname)))
                 {
                     continue;
                 }
-                string args = $"\"{file.FullName}\" \"{Path.Combine(GameExefsModFolder, file.Name)}\"";
-                Process.Start(NSNSOTOOL_PATH, args);
-                //file.CopyTo(Path.Combine(GameExefsModFolder, newname));
+                file.CopyTo(Path.Combine(GameExefsModFolder, newname));
             }
         }
 
