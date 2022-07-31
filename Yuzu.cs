@@ -297,7 +297,7 @@ $@"== Corrupt Switch Games ==
 
             process.WaitForExit();
 
-            if(Directory.Exists(GameExefsModFolder))
+            if(!Directory.Exists(GameNSODumpFolder))
             {
                 MessageBox.Show($"Could not find the folder for the extracted dump: {GameNSODumpFolder}");
                 return;
@@ -395,7 +395,7 @@ $@"== Corrupt Switch Games ==
         private void btnPrepareNROMod_Click(object sender, EventArgs e)
         {
             if (!File.Exists(Path.Combine(YuzuParamsDir, "NRODISCLAIMERREAD"))){
-                MessageBox.Show(@"Note:
+                MessageBox.Show(@"Note: The NRO Mod is just for games that use NROs. Everything else uses the exefs mod.
                                 Unlike with exefs switch executables, to load NROs into the Yuzu Filestub Template, you must have run a game (that has NROs) in the included version of Yuzu already. To dump an NRO, Yuzu must first load it in the emulated memory; this is because the NROs are in the game's romfs, and sometimes the NROs are in compressed archives. Thus, please ensure the game you want to corrupt NROs for has NROs, and then ensure that you have run it, generating pre-existing NRO dumps. Preparing an NRO mod requires you to have already run the game as said.");
                 File.Create(Path.Combine(YuzuParamsDir, "NRODISCLAIMERREAD"));
             }
@@ -425,7 +425,7 @@ $@"== Corrupt Switch Games ==
 
         private void button1_Click(object sender, EventArgs e)
         {
-            MessageBox.Show(@"Note:
+            MessageBox.Show(@"Note: The NRO Mod is just for games that use NROs. Everything else uses the exefs mod.
                                 Unlike with exefs switch executables, to load NROs into the Yuzu Filestub Template, you must have run a game (that has NROs) in the included version of Yuzu already. To dump an NRO, Yuzu must first load it in the emulated memory; this is because the NROs are in the game's romfs, and sometimes the NROs are in compressed archives. Thus, please ensure the game you want to corrupt NROs for has NROs, and then ensure that you have run it, generating pre-existing NRO dumps. Preparing an NRO mod requires you to have already run the game as said.");
 
         }
