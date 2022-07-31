@@ -31,6 +31,7 @@ namespace FileStub.Templates
         {
             this.lbTemplateDescription = new System.Windows.Forms.Label();
             this.pnTarget = new System.Windows.Forms.Panel();
+            this.btnStartYuzu = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.cbSelectedGame = new System.Windows.Forms.ComboBox();
             this.lbGameName = new System.Windows.Forms.Label();
@@ -38,6 +39,7 @@ namespace FileStub.Templates
             this.btnPrepareMod = new System.Windows.Forms.Button();
             this.lbNSOTarget = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.btnHowToUse = new System.Windows.Forms.Button();
             this.pnTarget.SuspendLayout();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
@@ -60,6 +62,8 @@ namespace FileStub.Templates
             // pnTarget
             // 
             this.pnTarget.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(96)))), ((int)(((byte)(96)))), ((int)(((byte)(96)))));
+            this.pnTarget.Controls.Add(this.btnHowToUse);
+            this.pnTarget.Controls.Add(this.btnStartYuzu);
             this.pnTarget.Controls.Add(this.button1);
             this.pnTarget.Controls.Add(this.cbSelectedGame);
             this.pnTarget.Controls.Add(this.lbGameName);
@@ -72,6 +76,24 @@ namespace FileStub.Templates
             this.pnTarget.TabIndex = 39;
             this.pnTarget.Tag = "color:normal";
             // 
+            // btnStartYuzu
+            // 
+            this.btnStartYuzu.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnStartYuzu.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.btnStartYuzu.FlatAppearance.BorderSize = 0;
+            this.btnStartYuzu.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnStartYuzu.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.btnStartYuzu.ForeColor = System.Drawing.Color.White;
+            this.btnStartYuzu.Location = new System.Drawing.Point(146, 68);
+            this.btnStartYuzu.Name = "btnStartYuzu";
+            this.btnStartYuzu.Size = new System.Drawing.Size(125, 22);
+            this.btnStartYuzu.TabIndex = 196;
+            this.btnStartYuzu.TabStop = false;
+            this.btnStartYuzu.Tag = "color:dark1";
+            this.btnStartYuzu.Text = "Start Yuzu (Modded)";
+            this.btnStartYuzu.UseVisualStyleBackColor = false;
+            this.btnStartYuzu.Click += new System.EventHandler(this.btnStartYuzu_Click);
+            // 
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -80,9 +102,9 @@ namespace FileStub.Templates
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button1.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.button1.ForeColor = System.Drawing.Color.White;
-            this.button1.Location = new System.Drawing.Point(252, 50);
+            this.button1.Location = new System.Drawing.Point(252, 27);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(19, 40);
+            this.button1.Size = new System.Drawing.Size(19, 38);
             this.button1.TabIndex = 195;
             this.button1.TabStop = false;
             this.button1.Tag = "color:dark1";
@@ -125,9 +147,9 @@ namespace FileStub.Templates
             this.btnPrepareNROMod.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnPrepareNROMod.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.btnPrepareNROMod.ForeColor = System.Drawing.Color.White;
-            this.btnPrepareNROMod.Location = new System.Drawing.Point(176, 49);
+            this.btnPrepareNROMod.Location = new System.Drawing.Point(146, 27);
             this.btnPrepareNROMod.Name = "btnPrepareNROMod";
-            this.btnPrepareNROMod.Size = new System.Drawing.Size(73, 40);
+            this.btnPrepareNROMod.Size = new System.Drawing.Size(103, 38);
             this.btnPrepareNROMod.TabIndex = 192;
             this.btnPrepareNROMod.TabStop = false;
             this.btnPrepareNROMod.Tag = "color:dark1";
@@ -143,9 +165,9 @@ namespace FileStub.Templates
             this.btnPrepareMod.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnPrepareMod.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.btnPrepareMod.ForeColor = System.Drawing.Color.White;
-            this.btnPrepareMod.Location = new System.Drawing.Point(176, 3);
+            this.btnPrepareMod.Location = new System.Drawing.Point(146, 3);
             this.btnPrepareMod.Name = "btnPrepareMod";
-            this.btnPrepareMod.Size = new System.Drawing.Size(95, 40);
+            this.btnPrepareMod.Size = new System.Drawing.Size(125, 22);
             this.btnPrepareMod.TabIndex = 192;
             this.btnPrepareMod.TabStop = false;
             this.btnPrepareMod.Tag = "color:dark1";
@@ -159,10 +181,10 @@ namespace FileStub.Templates
             this.lbNSOTarget.BackColor = System.Drawing.Color.Transparent;
             this.lbNSOTarget.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.lbNSOTarget.ForeColor = System.Drawing.Color.White;
-            this.lbNSOTarget.Location = new System.Drawing.Point(3, 3);
+            this.lbNSOTarget.Location = new System.Drawing.Point(3, 27);
             this.lbNSOTarget.Name = "lbNSOTarget";
             this.lbNSOTarget.Padding = new System.Windows.Forms.Padding(8);
-            this.lbNSOTarget.Size = new System.Drawing.Size(130, 32);
+            this.lbNSOTarget.Size = new System.Drawing.Size(137, 62);
             this.lbNSOTarget.TabIndex = 39;
             this.lbNSOTarget.Tag = "";
             this.lbNSOTarget.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -176,6 +198,24 @@ namespace FileStub.Templates
             this.panel1.Size = new System.Drawing.Size(274, 103);
             this.panel1.TabIndex = 40;
             this.panel1.Tag = "color:normal";
+            // 
+            // btnHowToUse
+            // 
+            this.btnHowToUse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnHowToUse.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.btnHowToUse.FlatAppearance.BorderSize = 0;
+            this.btnHowToUse.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnHowToUse.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.btnHowToUse.ForeColor = System.Drawing.Color.White;
+            this.btnHowToUse.Location = new System.Drawing.Point(15, 3);
+            this.btnHowToUse.Name = "btnHowToUse";
+            this.btnHowToUse.Size = new System.Drawing.Size(125, 22);
+            this.btnHowToUse.TabIndex = 197;
+            this.btnHowToUse.TabStop = false;
+            this.btnHowToUse.Tag = "color:dark1";
+            this.btnHowToUse.Text = "How to use (?)";
+            this.btnHowToUse.UseVisualStyleBackColor = false;
+            this.btnHowToUse.Click += new System.EventHandler(this.btnHowToUse_Click);
             // 
             // FileStubTemplateYuzu
             // 
@@ -207,5 +247,7 @@ namespace FileStub.Templates
         private System.Windows.Forms.Button btnPrepareMod;
         private System.Windows.Forms.Button btnPrepareNROMod;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnStartYuzu;
+        private System.Windows.Forms.Button btnHowToUse;
     }
 }

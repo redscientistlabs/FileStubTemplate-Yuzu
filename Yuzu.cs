@@ -429,6 +429,26 @@ $@"== Corrupt Switch Games ==
                                 Unlike with exefs switch executables, to load NROs into the Yuzu Filestub Template, you must have run a game (that has NROs) in the included version of Yuzu already. To dump an NRO, Yuzu must first load it in the emulated memory; this is because the NROs are in the game's romfs, and sometimes the NROs are in compressed archives. Thus, please ensure the game you want to corrupt NROs for has NROs, and then ensure that you have run it, generating pre-existing NRO dumps. Preparing an NRO mod requires you to have already run the game as said.");
 
         }
+
+        private void btnStartYuzu_Click(object sender, EventArgs e)
+        {
+            ProcessStartInfo processStartInfo = new ProcessStartInfo();
+            processStartInfo.FileName = YuzuExePath;
+            processStartInfo.WorkingDirectory = Path.GetDirectoryName(YuzuExePath);
+            processStartInfo.Arguments = $"";
+            Process process = new Process();
+            process.StartInfo = processStartInfo;
+            process.Start();
+        }
+
+        private void btnHowToUse_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show($"This template comes with a modded version of yuzu made for preparing files for corruptions. " +
+                $"This version is somewhat old so please be weary of that. " +
+                $"Start by booting up Modded Yuzu (There's a button for that) and then make sure your game loads. " +
+                $"Then, use Browse Target to select your game and press one of the buttons to mod it. " +
+                $"Once that is done, you should be able to Load the target in RTCV.");
+        }
     }
     public class YuzuTemplateSession
     {
