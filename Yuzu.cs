@@ -23,7 +23,6 @@ namespace FileStub.Templates
         const string YUZUSTUB_MAINANDNROS = "Yuzu : NS Executables - main and Relocatables";
         const string YUZUSTUB_ALL = "Yuzu : NS Executables - All Executables and Relocatables";
         public static string YuzuDir = Path.Combine(FileStub.FileWatch.currentDir, "YUZU");
-        public string NSNSOTOOL_PATH = Path.Combine(YuzuDir, "nsnsotool.exe");
         public string YuzuExePath = Path.Combine(FileStub.FileWatch.currentDir, "EMUS", "YUZU", "yuzu.exe");
         public string GameExefsModFolder;
         public string GameNROModFolder;
@@ -408,6 +407,13 @@ $@"== Corrupt Switch Games ==
                 }
                 file.CopyTo(Path.Combine(GameNROModFolder, file.Name));
             }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(@"Note:
+                                Unlike with exefs switch executables, to load NROs into the Yuzu Filestub Template, you must have run a game (that has NROs) in the included version of Yuzu already. To dump an NRO, Yuzu must first load it in the emulated memory; this is because the NROs are in the game's romfs, and sometimes the NROs are in compressed archives. Thus, please ensure the game you want to corrupt NROs for has NROs, and then ensure that you have run it, generating pre-existing NRO dumps. Preparing an NRO mod requires you to have already run the game as said.");
+
         }
     }
     public class YuzuTemplateSession
